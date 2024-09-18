@@ -37,7 +37,7 @@ app.post('/customers/addCustomer', (req, res) => {
     firstName: customerData.firstName,
     lastName: customerData.lastName,
     age: customerData.age,
-    gender: customerData.gender
+    gender: customerData.gender,
   };
 
   try {
@@ -49,8 +49,52 @@ app.post('/customers/addCustomer', (req, res) => {
   }
 });
 
+app.put('/customers/updateCustomer/:customerId', (req, res) => {
+  const customerId = parseInt(req.params.customerId);
+  const customerIndex = customers.findIndex(
+    (customer) => customer.id === customerId
+  );
 
+  if (customerIndex === -1) {
+    return res.status(404).json({ error: 'Customer not found' });
+  }
+
+  const updateCustomer = req.body;
+  customers[customerIndex].firstName = updateCustomer.firstName;
+  customers[customerIndex].lastName = updateCustomer.lastName;
+  customers[customerIndex].age = updateCustomer.age;
+  customers[customerIndex].gender = updateCustomer.gender;
+
+  try {
+    res.status(200).json(customers[customerIndex]);
+  } catch (error) {
+    res.status(500).json({ error: 'There is an error' });
+  }
+});
+
+app.delete('/customers/deleteCustomer/:customerId', (req, res) => {
+  if (customers.length === 0) {
+    return res.status(404).json({ error: 'No customers found' });
+  }
+
+  const customerId = parseInt(req.params.customerId);
+  const customerIndex = customers.findIndex(
+    (customer) => customer.id === customerId
+  );
+
+  if (customerIndex === -1) {
+    return res.status(404).json({ error: 'Customer not found' });
+  }
+
+  try {
+    customers.splice(customerIndex, 1);
+    res.status(200).json({ message: 'Customer deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error deleting customer' });
+  }
+});
 
 app.listen(port, () => {
-    console.log(`Customers Server running at port ${port}`);
+  console.log(`Customers Server running at port ${port}`);
 });
