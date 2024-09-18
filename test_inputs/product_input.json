@@ -1,0 +1,26 @@
+[
+    {
+        "id": 0,
+        "category": "Shoes",
+        "name": "Air Force 2",
+        "color": "White",
+        "unit": "10 UK",
+        "price": 599
+    },
+    {
+        "id": 1,
+        "category": "Bag",
+        "name": "Belanciaga",
+        "color": "Black",
+        "unit": "Small",
+        "price": 999
+    },
+    {
+        "id": 2,
+        "category": "Dress",
+        "name": "Sunflower Face",
+        "color": "Black-Yellow",
+        "unit": "Medium",
+        "price": 399
+    }
+]
