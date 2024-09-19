@@ -37,3 +37,24 @@ Members:
     - DELETE /orders/:orderId: Delete an order.
 
 # Instructions in Installing and Running the API
+
+1. Clone the project in your local directory of choice. Use the link below:
+    ```
+    https://github.com/n3wt0n03/Exercise_3_Microservices.git
+    ```
+
+2.  Change directory to every folder: "customer", "products", and "order": 
+    ```
+    cd Exercise_3_Microservices\customer
+    ```
+
+3. Execute "npm i" to every folder to install node modules in every folder:
+    ```
+    Exercise_3_Microservices\customer> npm i
+    ```
+4. After installing, execute "npm start" to run the server in every folder 
+    ```
+    Exercise_3_Microservices\customer> npm start
+    ```
+
+5. Use the sample inputs under the folder "test_inputs" for every services in running Postman. Copy and paste it manually.
