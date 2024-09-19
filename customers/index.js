@@ -60,10 +60,38 @@ app.put('/customers/updateCustomer/:customerId', (req, res) => {
   }
 
   const updateCustomer = req.body;
-  customers[customerIndex].firstName = updateCustomer.firstName;
-  customers[customerIndex].lastName = updateCustomer.lastName;
-  customers[customerIndex].age = updateCustomer.age;
-  customers[customerIndex].gender = updateCustomer.gender;
+
+  if (req.body.firstName === '') {
+    customers[customerIndex].firstName = customers[customerIndex].firstName;
+  } else if (req.body.firstName === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    customers[customerIndex].firstName = updateCustomer.firstName;
+  }
+
+  if (req.body.lastName === '') {
+    customers[customerIndex].lastName = customers[customerIndex].lastName;
+  } else if (req.body.lastName === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    customers[customerIndex].lastName = updateCustomer.lastName;
+  }
+
+  if (req.body.age === '') {
+    customers[customerIndex].age = customers[customerIndex].age;
+  } else if (req.body.age === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    customers[customerIndex].age = updateCustomer.age;
+  }
+
+  if (req.body.gender === '') {
+    customers[customerIndex].gender = customers[customerIndex].gender;
+  } else if (req.body.gender === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    customers[customerIndex].gender = updateCustomer.gender;
+  }
 
   try {
     res.status(200).json(customers[customerIndex]);

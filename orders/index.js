@@ -88,6 +88,14 @@ app.put('/orders/updateOrder/:orderId', async (req, res) => {
   const customerId = updateOrder.customerId;
   const productId = updateOrder.productId;
 
+  if (!customerId || customerId === '' || customerId === ' ') {
+    return res.status(400).json({ message: 'Missing or invalid customer ID' });
+  }
+
+  if (!productId || productId === '' || productId === ' ') {
+    return res.status(400).json({ message: 'Missing or invalid product ID' });
+  }
+
   try {
     const customer = await axios.get(
       `http://localhost:3002/customers/getCustomer/${customerId}`
