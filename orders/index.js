@@ -46,6 +46,11 @@ app.get('/orders/getOrder/:orderId', async (req, res) => {
 
 app.post('/orders/makeOrder', async (req, res) => {
   const ids = req.body;
+
+  if (!ids.customerId || !ids.productId) {
+    return res.status(400).json({ message: 'Please provide all the required fields' });
+  }
+
   try {
     const customer = await axios.get(
       `http://localhost:3002/customers/getCustomer/${ids.customerId}`

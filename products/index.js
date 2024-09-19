@@ -33,6 +33,10 @@ app.get('/products/getProduct/:productId', (req, res) => {
 app.post('/products/addProduct', (req, res) => {
   const item = req.body;
 
+  if(item.category === "" || item.name === "" || item.color === "" || item.unit === "" || item.price === "" || item.category === " " || item.name === " " || item.color === " " || item.unit === " " || item.price === " "){
+    return res.status(400).json({ error: 'Please provide all the required fields' });
+  }
+
   const product = {
     id: idCounter++,
     category: item.category,

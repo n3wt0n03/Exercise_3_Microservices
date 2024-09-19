@@ -32,6 +32,10 @@ app.get('/customers/getCustomer/:customerId', (req, res) => {
 app.post('/customers/addCustomer', (req, res) => {
   const customerData = req.body;
 
+  if(customerData.firstName === "" || customerData.lastName === "" || customerData.age === "" || customerData.firstName === " " || customerData.lastName === " " || customerData.age === " "){
+    return res.status(400).json({ error: 'Please provide all the required fields' });
+  }
+
   const customer = {
     id: idCounter++,
     firstName: customerData.firstName,
