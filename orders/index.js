@@ -76,7 +76,54 @@ app.post('/orders/makeOrder', async (req, res) => {
   }
 });
 
+app.put('/orders/updateOrder/:orderId', async (req, res) => {
+  const orderId = parseInt(req.params.orderId);
+  const orderIndex = orders.findIndex((order) => order.id === orderId);
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+
+  const updateOrder = req.body;
+  const customerId = updateOrder.customerId;
+  const productId = updateOrder.productId;
+
+  try {
+    const customer = await axios.get(
+      `http://localhost:3002/customers/getCustomer/${customerId}`
+    );
+    if (customer.status !== 200) {
+      return res.status(404).json({ message: 'Customer not found or invalid' });
+    }
+
+    const product = await axios.get(
+      `http://localhost:3001/products/getProduct/${productId}`
+    );
+    if (product.status !== 200) {
+      return res.status(404).json({ message: 'Product not found or invalid' });
+    }
+
+    orders[orderIndex].customerId = customerId;
+    orders[orderIndex].productId = productId;
+
+    res.status(200).json({ message: 'Order updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order' });
+  }
+});
+
+app.delete('/orders/deleteOrder/:orderId', (req, res) => {
+  const orderId = parseInt(req.params.orderId);
+  const orderIndex = orders.findIndex((order) => order.id === orderId);
+
+  try {
+    orders.splice(orderIndex, 1);
+    res.status(200).json({ message: 'Deleted Succeessfully' });
+  } catch (error) {
+    res.status(404).json({ message: 'Order not found or invalid' });
+  }
+});
 
 app.listen(port, () => {
-    console.log(`Product Server running at port ${port}`);
-  });
+  console.log(`Product Server running at port ${port}`);
+});

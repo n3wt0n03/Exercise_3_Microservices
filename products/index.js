@@ -39,7 +39,7 @@ app.post('/products/addProduct', (req, res) => {
     name: item.name,
     color: item.color,
     unit: item.unit,
-    price: item.price
+    price: item.price,
   };
 
   try {
@@ -50,10 +50,50 @@ app.post('/products/addProduct', (req, res) => {
   }
 });
 
+app.put('/products/updateProduct/:productId', (req, res) => {
+  const productId = parseInt(req.params.productId);
+  const productIndex = products.findIndex(
+    (product) => product.id === productId
+  );
 
+  if (productIndex === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const updateProduct = req.body;
+  products[productIndex].category = updateProduct.category;
+  products[productIndex].name = updateProduct.name;
+  products[productIndex].color = updateProduct.color;
+  products[productIndex].unit = updateProduct.unit;
+  products[productIndex].price = updateProduct.price;
+
+  try {
+    res.status(200).json(products[productIndex]);
+  } catch (error) {
+    res.status(500).json({ error: 'There is an error' });
+  }
+});
+
+app.delete('/products/deleteProduct/:productId', (req, res) => {
+  const productId = parseInt(req.params.productId);
+  const productIndex = products.findIndex(
+    (product) => product.id === productId
+  );
+
+  try {
+    console.log(productId);
+    if (productIndex === -1) {
+      return res.status(400).json({ error: 'Product not found' });
+    } else {
+      console.log(productIndex);
+      products.splice(productIndex, 1);
+      res.status(200).json({ message: 'Delete Successful' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'There is an error' });
+  }
+});
 
 app.listen(port, () => {
-    console.log(`Product Server running at port ${port}`);
-  });
-
-
+  console.log(`Product Server running at port ${port}`);
+});
