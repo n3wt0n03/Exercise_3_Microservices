@@ -65,11 +65,46 @@ app.put('/products/updateProduct/:productId', (req, res) => {
   }
 
   const updateProduct = req.body;
-  products[productIndex].category = updateProduct.category;
-  products[productIndex].name = updateProduct.name;
-  products[productIndex].color = updateProduct.color;
-  products[productIndex].unit = updateProduct.unit;
-  products[productIndex].price = updateProduct.price;
+
+  if (req.body.category === '') {
+    products[productIndex].category = products[productIndex].category;
+  } else if (req.body.category === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    products[productIndex].category = updateProduct.category;
+  }
+
+  if (req.body.name === '') {
+    products[productIndex].name = products[productIndex].name;
+  } else if (req.body.name === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    products[productIndex].name = updateProduct.name;
+  }
+
+  if (req.body.color === '') {
+    products[productIndex].color = products[productIndex].color;
+  } else if (req.body.color === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    products[productIndex].color = updateProduct.color;
+  }
+
+  if (req.body.unit === '') {
+    products[productIndex].unit = products[productIndex].unit;
+  } else if (req.body.unit === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    products[productIndex].unit = updateProduct.unit;
+  }
+
+  if (req.body.price === '') {
+    products[productIndex].price = products[productIndex].price;
+  } else if (req.body.price === ' ') {
+    return res.status(400).json({ error: 'Input missing field' });
+  } else {
+    products[productIndex].price = updateProduct.price;
+  }
 
   try {
     res.status(200).json(products[productIndex]);
