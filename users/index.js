@@ -4,101 +4,101 @@ const port = 3002;
 
 app.use(express.json());
 
-let customers = [];
+let users = [];
 let idCounter = 0;
 
-app.get('/customers/getAll', (req, res) => {
+app.get('/users/getAll', (req, res) => {
   try {
-    res.status(200).json(customers);
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: 'server error' });
   }
 });
 
-app.get('/customers/getCustomer/:customerId', (req, res) => {
-  const customerId = parseInt(req.params.customerId);
-  const customer = customers.find((customer) => customer.id === customerId);
+app.get('/users/getUser/:userId', (req, res) => {
+  const userID = parseInt(req.params.userId);
+  const user = users.find((user) => user.id === userID);
 
-  if (!customer) {
-    return res.status(404).json({ error: 'Customer not found' });
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
   }
   try {
-    res.status(200).json(customer);
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: 'There is an error' });
   }
 });
 
-app.post('/customers/addCustomer', (req, res) => {
-  const customerData = req.body;
+app.post('/users/addUser', (req, res) => {
+  const userData = req.body;
 
-  if(customerData.firstName === "" || customerData.lastName === "" || customerData.age === "" || customerData.firstName === " " || customerData.lastName === " " || customerData.age === " "){
+  if(userData.firstName === "" || userData.lastName === "" || userData.age === "" || userData.firstName === " " || userData.lastName === " " || userData.age === " "){
     return res.status(400).json({ error: 'Please provide all the required fields' });
   }
 
-  const customer = {
+  const user = {
     id: idCounter++,
-    firstName: customerData.firstName,
-    lastName: customerData.lastName,
-    age: customerData.age,
-    gender: customerData.gender,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    age: userData.age,
+    gender: userData.gender,
   };
 
   try {
-    customers.push(customer);
-    res.status(201).json(customers);
+    users.push(user);
+    res.status(201).json(users);
   } catch (error) {
     res.status(500).json({ error: 'There is an error' });
     console.log(error);
   }
 });
 
-app.put('/customers/updateCustomer/:customerId', (req, res) => {
-  const customerId = parseInt(req.params.customerId);
-  const customerIndex = customers.findIndex(
-    (customer) => customer.id === customerId
+app.put('/users/updateUser/:userId', (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const userIndex = users.findIndex(
+    (user) => user.id === userId
   );
 
-  if (customerIndex === -1) {
-    return res.status(404).json({ error: 'Customer not found' });
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
   }
 
-  const updateCustomer = req.body;
+  const updateUser = req.body;
 
   if (req.body.firstName === '') {
-    customers[customerIndex].firstName = customers[customerIndex].firstName;
+    users[userIndex].firstName = users[userIndex].firstName;
   } else if (req.body.firstName === ' ') {
     return res.status(400).json({ error: 'Input missing field' });
   } else {
-    customers[customerIndex].firstName = updateCustomer.firstName;
+    users[userIndex].firstName = updateuser.firstName;
   }
 
   if (req.body.lastName === '') {
-    customers[customerIndex].lastName = customers[customerIndex].lastName;
+    users[userIndex].lastName = users[userIndex].lastName;
   } else if (req.body.lastName === ' ') {
     return res.status(400).json({ error: 'Input missing field' });
   } else {
-    customers[customerIndex].lastName = updateCustomer.lastName;
+    users[userIndex].lastName = updateuser.lastName;
   }
 
   if (req.body.age === '') {
-    customers[customerIndex].age = customers[customerIndex].age;
+    users[userIndex].age = users[userIndex].age;
   } else if (req.body.age === ' ') {
     return res.status(400).json({ error: 'Input missing field' });
   } else {
-    customers[customerIndex].age = updateCustomer.age;
+    users[userIndex].age = updateuser.age;
   }
 
   if (req.body.gender === '') {
-    customers[customerIndex].gender = customers[customerIndex].gender;
+    users[userIndex].gender = users[userIndex].gender;
   } else if (req.body.gender === ' ') {
     return res.status(400).json({ error: 'Input missing field' });
   } else {
-    customers[customerIndex].gender = updateCustomer.gender;
+    users[userIndex].gender = updateuser.gender;
   }
 
   try {
-    res.status(200).json(customers[customerIndex]);
+    res.status(200).json(users[userIndex]);
   } catch (error) {
     res.status(500).json({ error: 'There is an error' });
   }

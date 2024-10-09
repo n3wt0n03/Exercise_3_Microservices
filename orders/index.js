@@ -26,8 +26,8 @@ app.get('/orders/getOrder/:orderId', async (req, res) => {
   }
 
   try {
-    const customer = await axios.get(
-      `http://localhost:3002/customers/getCustomer/${orderData.customerId}`
+    const user = await axios.get(
+      `http://localhost:3002/user/userUser/${orderData.user}`
     );
     const product = await axios.get(
       `http://localhost:3001/products/getProduct/${orderData.productId}`
@@ -35,7 +35,7 @@ app.get('/orders/getOrder/:orderId', async (req, res) => {
 
     const orderInfo = {
       orderId: orderId,
-      customerData: customer.data,
+      userData: user.data,
       productData: product.data,
     };
     res.status(200).json(orderInfo);
@@ -47,17 +47,17 @@ app.get('/orders/getOrder/:orderId', async (req, res) => {
 app.post('/orders/makeOrder', async (req, res) => {
   const ids = req.body;
 
-  if (ids.customerId === " " || !ids.productId === " " || ids.customerId === "" || !ids.productId === "") {
+  if (ids.userId === " " || !ids.productId === " " || ids.userId === "" || !ids.productId === "") {
     return res.status(400).json({ message: 'Please provide all the required fields' });
   }
 
   try {
-    const customer = await axios.get(
-      `http://localhost:3002/customers/getCustomer/${ids.customerId}`
+    const user = await axios.get(
+      `http://localhost:3002/users/getUser/${ids.userId}`
     );
-    console.log(customer.status);
-    if (customer.status !== 200) {
-      return res.status(404).json({ message: 'Customer not found or invalid' });
+    console.log(user.status);
+    if (user.status !== 200) {
+      return res.status(404).json({ message: 'User not found or invalid' });
     }
 
     const product = await axios.get(
@@ -70,14 +70,14 @@ app.post('/orders/makeOrder', async (req, res) => {
 
     const order = {
       id: idCount++,
-      customerId: customer.data.id,
+      userId: user.data.id,
       productId: product.data.id,
     };
 
     orders.push(order);
     res.status(201).json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Customer or Product invalid' });
+    res.status(500).json({ message: 'User or Product invalid' });
   }
 });
 
@@ -90,11 +90,11 @@ app.put('/orders/updateOrder/:orderId', async (req, res) => {
   }
 
   const updateOrder = req.body;
-  const customerId = updateOrder.customerId;
+  const userId = updateOrder.userId;
   const productId = updateOrder.productId;
 
-  if (!customerId || customerId === '' || customerId === ' ') {
-    return res.status(400).json({ message: 'Missing or invalid customer ID' });
+  if (!userId || userId === '' || userId === ' ') {
+    return res.status(400).json({ message: 'Missing or invalid user ID' });
   }
 
   if (!productId || productId === '' || productId === ' ') {
@@ -102,11 +102,11 @@ app.put('/orders/updateOrder/:orderId', async (req, res) => {
   }
 
   try {
-    const customer = await axios.get(
-      `http://localhost:3002/customers/getCustomer/${customerId}`
+    const user = await axios.get(
+      `http://localhost:3002/users/getUser/${userId}`
     );
-    if (customer.status !== 200) {
-      return res.status(404).json({ message: 'Customer not found or invalid' });
+    if (user.status !== 200) {
+      return res.status(404).json({ message: 'User not found or invalid' });
     }
 
     const product = await axios.get(
@@ -116,7 +116,7 @@ app.put('/orders/updateOrder/:orderId', async (req, res) => {
       return res.status(404).json({ message: 'Product not found or invalid' });
     }
 
-    orders[orderIndex].customerId = customerId;
+    orders[orderIndex].userId = userId;
     orders[orderIndex].productId = productId;
 
     res.status(200).json({ message: 'Order updated successfully' });
