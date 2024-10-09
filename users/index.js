@@ -8,6 +8,7 @@ app.use(express.json());
 
 const verifyToken = require('../middleware/authMiddleware');
 const apiRateLimiter = require('../middleware/rateLimiterMiddleware');
+const checkRole = require('../middleware/rbacMiddleware');
 
 let users = [];
 let idCounter = 0;
@@ -81,65 +82,84 @@ app.post('/login', apiRateLimiter, async (req, res) => {
   }
 });
 
-app.get('/users/getAll', verifyToken, apiRateLimiter, (req, res) => {
-  try {
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'server error' });
+app.get(
+  '/users/getAll',
+  verifyToken,
+  apiRateLimiter,
+  checkRole(['admin']),
+  (req, res) => {
+    try {
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ message: 'server error' });
+    }
   }
-});
+);
 
-app.get('/users/getUser/:userId', verifyToken, apiRateLimiter, (req, res) => {
-  const userID = parseInt(req.params.userId);
-  const user = users.find((user) => user.id === userID);
+app.get(
+  '/users/getUser/:userId',
+  verifyToken,
+  apiRateLimiter,
+  checkRole(['admin']),
+  (req, res) => {
+    const userID = parseInt(req.params.userId);
+    const user = users.find((user) => user.id === userID);
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    try {
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'There is an error' });
+    }
   }
-  try {
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'There is an error' });
+);
+
+app.post(
+  '/users/addUser',
+  verifyToken,
+  apiRateLimiter,
+  checkRole(['admin']),
+  (req, res) => {
+    const userData = req.body;
+
+    if (
+      userData.firstName === '' ||
+      userData.lastName === '' ||
+      userData.age === '' ||
+      userData.firstName === ' ' ||
+      userData.lastName === ' ' ||
+      userData.age === ' '
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'Please provide all the required fields' });
+    }
+
+    const user = {
+      id: idCounter++,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      age: userData.age,
+      gender: userData.gender,
+    };
+
+    try {
+      users.push(user);
+      res.status(201).json(users);
+    } catch (error) {
+      res.status(500).json({ error: 'There is an error' });
+      console.log(error);
+    }
   }
-});
-
-app.post('/users/addUser', verifyToken, apiRateLimiter, (req, res) => {
-  const userData = req.body;
-
-  if (
-    userData.firstName === '' ||
-    userData.lastName === '' ||
-    userData.age === '' ||
-    userData.firstName === ' ' ||
-    userData.lastName === ' ' ||
-    userData.age === ' '
-  ) {
-    return res
-      .status(400)
-      .json({ error: 'Please provide all the required fields' });
-  }
-
-  const user = {
-    id: idCounter++,
-    firstName: userData.firstName,
-    lastName: userData.lastName,
-    age: userData.age,
-    gender: userData.gender,
-  };
-
-  try {
-    users.push(user);
-    res.status(201).json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'There is an error' });
-    console.log(error);
-  }
-});
+);
 
 app.put(
   '/users/updateUser/:userId',
   verifyToken,
   apiRateLimiter,
+  checkRole(['admin', 'customer']),
   (req, res) => {
     const userId = parseInt(req.params.userId);
     const userIndex = users.findIndex((user) => user.id === userId);
@@ -155,7 +175,7 @@ app.put(
     } else if (req.body.firstName === ' ') {
       return res.status(400).json({ error: 'Input missing field' });
     } else {
-      users[userIndex].firstName = updateuser.firstName;
+      users[userIndex].firstName = updateUser.firstName;
     }
 
     if (req.body.lastName === '') {
@@ -163,7 +183,7 @@ app.put(
     } else if (req.body.lastName === ' ') {
       return res.status(400).json({ error: 'Input missing field' });
     } else {
-      users[userIndex].lastName = updateuser.lastName;
+      users[userIndex].lastName = updateUser.lastName;
     }
 
     if (req.body.age === '') {
@@ -171,7 +191,7 @@ app.put(
     } else if (req.body.age === ' ') {
       return res.status(400).json({ error: 'Input missing field' });
     } else {
-      users[userIndex].age = updateuser.age;
+      users[userIndex].age = updateUser.age;
     }
 
     if (req.body.gender === '') {
@@ -179,7 +199,7 @@ app.put(
     } else if (req.body.gender === ' ') {
       return res.status(400).json({ error: 'Input missing field' });
     } else {
-      users[userIndex].gender = updateuser.gender;
+      users[userIndex].gender = updateUser.gender;
     }
 
     try {
@@ -194,6 +214,7 @@ app.delete(
   '/customers/deleteCustomer/:customerId',
   verifyToken,
   apiRateLimiter,
+  checkRole(['admin']),
   (req, res) => {
     if (customers.length === 0) {
       return res.status(404).json({ error: 'No customers found' });
