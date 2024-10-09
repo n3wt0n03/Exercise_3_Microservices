@@ -6,6 +6,8 @@ const port = 3002;
 
 app.use(express.json());
 
+const verifyToken = require('../middleware/authMiddleware');
+
 let users = [];
 let idCounter = 0;
 
@@ -78,7 +80,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/users/getAll', (req, res) => {
+app.get('/users/getAll', verifyToken, (req, res) => {
   try {
     res.status(200).json(users);
   } catch (error) {
@@ -86,7 +88,7 @@ app.get('/users/getAll', (req, res) => {
   }
 });
 
-app.get('/users/getUser/:userId', (req, res) => {
+app.get('/users/getUser/:userId', verifyToken, (req, res) => {
   const userID = parseInt(req.params.userId);
   const user = users.find((user) => user.id === userID);
 
@@ -100,7 +102,7 @@ app.get('/users/getUser/:userId', (req, res) => {
   }
 });
 
-app.post('/users/addUser', (req, res) => {
+app.post('/users/addUser', verifyToken, (req, res) => {
   const userData = req.body;
 
   if (
@@ -133,7 +135,7 @@ app.post('/users/addUser', (req, res) => {
   }
 });
 
-app.put('/users/updateUser/:userId', (req, res) => {
+app.put('/users/updateUser/:userId', verifyToken, (req, res) => {
   const userId = parseInt(req.params.userId);
   const userIndex = users.findIndex((user) => user.id === userId);
 
@@ -182,7 +184,7 @@ app.put('/users/updateUser/:userId', (req, res) => {
   }
 });
 
-app.delete('/customers/deleteCustomer/:customerId', (req, res) => {
+app.delete('/customers/deleteCustomer/:customerId', verifyToken, (req, res) => {
   if (customers.length === 0) {
     return res.status(404).json({ error: 'No customers found' });
   }
