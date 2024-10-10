@@ -1,11 +1,23 @@
 const express = require('express');
 const app = express();
 const port = 3001;
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+
 
 app.use(express.json());
 
 let products = [];
 let idCounter = 0;
+
+const sslServer = https.createServer({
+  key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
+}, app)
+
+
+
 
 app.get('/products/getAll', (req, res) => {
   try {
@@ -133,6 +145,4 @@ app.delete('/products/deleteProduct/:productId', (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Product Server running at port ${port}`);
-});
+sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))

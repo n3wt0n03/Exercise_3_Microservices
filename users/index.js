@@ -3,17 +3,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const app = express();
 const port = 3002;
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+
+
+const { validateLogin, validateRegister, validateUpdateProfile, checkValidationResults } = require('../middlewares/inputValidation');
+const { fstat } = require("fs");
 
 app.use(express.json());
 
 let users = [];
 let idCounter = 0;
 
-// Secret key for JWT
+const sslServer = https.createServer({
+  key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
+}, app)
+
+
+
+
+
 const secretKey = 'yourSecretKey';
 
 function generateToken(user) {
-  // Generate JWT
   const token = jwt.sign({ id: user.id, role: user.role }, secretKey, {
     expiresIn: '1h',
   });
@@ -21,26 +35,25 @@ function generateToken(user) {
   return token;
 }
 
-// Register
-app.post('/register', async (req, res) => {
-  const { username, password, role } = req.body;
+app.post('/register', validateRegister, checkValidationResults, async (req, res) => {
+  const userData = req.body;
 
   try {
-    // Check if user already exists
-    const userExists = users.find((u) => u.username === username);
+    const userExists = users.find((u) => u.username === userData.username);
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create and save new user
     const newUser = {
-      id: users.length + 1,
-      username,
+      id: users.length++,
+      username: userData.username,
       password: hashedPassword,
-      role,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      age: userData.age,
+      gender: userData.gender,
+      role: userData.role ?? 'user'
     };
     users.push(newUser);
 
@@ -53,18 +66,16 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login a user
-app.post('/login', async (req, res) => {
+app.post('/login', validateLogin, async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Find user by username
+  
     const user = users.find((u) => u.username === username);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check password match
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -133,7 +144,7 @@ app.post('/users/addUser', (req, res) => {
   }
 });
 
-app.put('/users/updateUser/:userId', (req, res) => {
+app.put('/users/updateUser/:userId', validateUpdateProfile,(req, res) => {
   const userId = parseInt(req.params.userId);
   const userIndex = users.findIndex((user) => user.id === userId);
 
@@ -205,6 +216,4 @@ app.delete('/customers/deleteCustomer/:customerId', (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Customers Server running at port ${port}`);
-});
+sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
