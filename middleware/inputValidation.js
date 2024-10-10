@@ -1,7 +1,5 @@
 const {body, validationResult} = require('express-validator');
 
-//npm i express-validator
-
 const validateLogin = [
     body('username').isLength({min: 1}).withMessage('Username must be at least 1 character long'),
     body('password').isLength({min: 8}).withMessage('Password must be at least 8 characters long')
@@ -51,7 +49,7 @@ const validateUpdateProduct = [
 
 const validateOrderInput = [
     body('productId').isInt().withMessage('Product ID must be an integer'),
-    body('quantity').isInt({min: 1}).withMessage('Quantity must be at least 1')
+  //  body('quantity').isInt({min: 1}).withMessage('Quantity must be at least 1')
 ]
 
 

@@ -5,6 +5,7 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const jwt = require('jsonwebtoken');
 
 
 app.use(express.json());
@@ -14,6 +15,9 @@ const verifyToken = require("../middleware/authMiddleware");
 const apiRateLimiter = require("../middleware/rateLimiterMiddleware");
 const checkRole = require("../middleware/rbacMiddleware");
 
+const httpsAgent = new https.Agent({  
+  rejectUnauthorized: false
+});
 
 let orders = [];
 let idCount = 0;
@@ -24,7 +28,7 @@ const sslServer = https.createServer({
 }, app)
 
 
-app.get('/orders/getAll', 
+app.get('/getAll', 
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -37,7 +41,7 @@ app.get('/orders/getAll',
 });
 
 app.get(
-  '/orders/getOrder/:orderId',
+  '/getOrder/:orderId',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -52,10 +56,22 @@ app.get(
 
     try {
       const user = await axios.get(
-        `http://localhost:3002/user/userUser/${orderData.user}`
+        `http://localhost:3002/user/userUser/${orderData.user}`,
+        {
+          headers: {
+              Authorization: req.headers['authorization'],
+          },
+          httpsAgent
+        }
       );
       const product = await axios.get(
-        `http://localhost:3001/products/getProduct/${orderData.productId}`
+        `http://localhost:3001/products/getProduct/${orderData.productId}`,
+        {
+          headers: {
+              Authorization: req.headers['authorization'],
+          },
+          httpsAgent
+        }
       );
 
       const orderInfo = {
@@ -71,7 +87,7 @@ app.get(
 );
 
 app.post(
-  '/orders/makeOrder',
+  '/makeOrder',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -80,30 +96,35 @@ app.post(
   async (req, res) => {
     const ids = req.body;
 
+
+    const token = req.headers['authorization'].split(' ')[1];
+    const decoded = jwt.decode(token);
+    const userId = decoded.id;
+
     if (
-      ids.userId === ' ' ||
+      userId === ' ' ||
       !ids.productId === ' ' ||
-      ids.userId === '' ||
+      userId === '' ||
       !ids.productId === ''
     ) {
       return res
         .status(400)
         .json({ message: 'Please provide all the required fields' });
     }
-
+    console.log(ids.productId);
     try {
-      const user = await axios.get(
-        `http://localhost:3002/users/getUser/${ids.userId}`
-      );
-      console.log(user.status);
-      if (user.status !== 200) {
-        return res.status(404).json({ message: 'User not found or invalid' });
-      }
-
+      console.log(userId);
       const product = await axios.get(
-        `http://localhost:3001/products/getProduct/${ids.productId}`
-      );
-      console.log(product.status);
+        `https://localhost:3001/getProduct/${ids.productId}`,{
+          headers: {
+              Authorization: req.headers['authorization'],
+          },
+          httpsAgent
+        })
+
+     
+      console.log(product);
+      console.log(userId);
       if (product.status !== 200) {
         return res
           .status(404)
@@ -112,20 +133,21 @@ app.post(
 
       const order = {
         id: idCount++,
-        userId: user.data.id,
+        userId: userId,
         productId: product.data.id,
       };
 
       orders.push(order);
       res.status(201).json(orders);
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: 'User or Product invalid' });
     }
   }
 );
 
 app.put(
-  '/orders/updateOrder/:orderId',
+  '/updateOrder/:orderId',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -151,14 +173,23 @@ app.put(
 
     try {
       const user = await axios.get(
-        `http://localhost:3002/users/getUser/${userId}`
-      );
+        `http://localhost:3002/users/getUser/${userId}`, {
+          headers: {
+              Authorization: req.headers['authorization'],
+          },
+          httpsAgent
+        });
       if (user.status !== 200) {
         return res.status(404).json({ message: 'User not found or invalid' });
       }
 
       const product = await axios.get(
-        `http://localhost:3001/products/getProduct/${productId}`
+        `http://localhost:3001/products/getProduct/${productId}`,{
+          headers: {
+              Authorization: req.headers['authorization'],
+          },
+          httpsAgent
+        }
       );
       if (product.status !== 200) {
         return res
@@ -177,7 +208,7 @@ app.put(
 );
 
 app.delete(
-  '/orders/deleteOrder/:orderId',
+  '/deleteOrder/:orderId',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -195,3 +226,4 @@ app.delete(
 );
 
 sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+module.exports = app;
