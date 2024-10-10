@@ -2,13 +2,13 @@
   "scripts": {
     "run-orders": "nodemon ./microservices/orders-services.js",
     "run-products": "nodemon ./microservices/products-services.js",
-    "run-users": "nodemon ./microservices/users-services.js"
+    "run-users": "nodemon ./microservices/users-services.js",
+    "start": "nodemon app.js"
   },
-
-
   "dependencies": {
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
     "express-validator": "^7.2.0",
@@ -17,5 +17,4 @@
   "devDependencies": {
     "nodemon": "^3.1.7"
   }
-
 }

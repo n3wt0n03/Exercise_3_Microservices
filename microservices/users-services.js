@@ -80,12 +80,15 @@ app.post('/login', apiRateLimiter, validateLogin, checkValidationResults, async 
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    const token = generateToken(finduser); 
-   
+    const token = generateToken(finduser);
+
     res.status(200).json({
       message: 'Login successful',
       token,
     });
+    
+
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'There was an error logging in' });
@@ -96,7 +99,7 @@ app.post('/login', apiRateLimiter, validateLogin, checkValidationResults, async 
 
 
 app.get(
-  '/users/getAll',
+  '/getAll',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin']),
@@ -255,3 +258,4 @@ app.delete(
 );
 
 sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+module.exports = app;

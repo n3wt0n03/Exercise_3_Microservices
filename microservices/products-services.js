@@ -26,7 +26,7 @@ const sslServer = https.createServer({
 
 
 
-app.get('/products/getAll', 
+app.get('/getAll', 
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -39,7 +39,7 @@ app.get('/products/getAll',
 });
 
 app.get(
-  '/products/getProduct/:productId',
+  '/getProduct/:productId',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
@@ -60,7 +60,7 @@ app.get(
 );
 
 app.post(
-  '/products/addProduct',
+  '/addProduct',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin']),
@@ -105,7 +105,7 @@ app.post(
 );
 
 app.put(
-  '/products/updateProduct/:productId',
+  '/updateProduct/:productId',
   verifyToken,
   apiRateLimiter,
   validateUpdateProduct,
@@ -172,7 +172,7 @@ app.put(
 );
 
 app.delete(
-  '/products/deleteProduct/:productId',
+  '/deleteProduct/:productId',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin']),
@@ -198,3 +198,4 @@ app.delete(
 );
 
 sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+module.exports = app;
