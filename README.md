@@ -1,9 +1,11 @@
-# Exercise 3 - Microservices
+# Exercises for Microservices
 
 Members:
 
 - Marc Nelson Ochavo
 - Jethro Engutan
+
+# Exercise 3 - Microservices
 
 # System Overview
 
@@ -39,22 +41,39 @@ Members:
 # Instructions in Installing and Running the API
 
 1. Clone the project in your local directory of choice. Use the link below:
-    ```
-    https://github.com/n3wt0n03/Exercise_3_Microservices.git
-    ```
 
-2.  Change directory to every folder: "customer", "products", and "order": 
-    ```
-    cd Exercise_3_Microservices\customer
-    ```
+   ```
+   https://github.com/n3wt0n03/Exercise_3_Microservices.git
+   ```
+
+2. Change directory to every folder: "customer", "products", and "order":
+
+   ```
+   cd Exercise_3_Microservices\customer
+   ```
 
 3. Execute "npm i" to every folder to install node modules in every folder:
-    ```
-    Exercise_3_Microservices\customer> npm i
-    ```
-4. After installing, execute "npm start" to run the server in every folder 
-    ```
-    Exercise_3_Microservices\customer> npm start
-    ```
+   ```
+   Exercise_3_Microservices\customer> npm i
+   ```
+4. After installing, execute "npm start" to run the server in every folder
+
+   ```
+   Exercise_3_Microservices\customer> npm start
+   ```
 
 5. Use the sample inputs under the folder "test_inputs" for every services in running Postman. Copy and paste it manually.
+
+# Exercise 4 - Security Implementation for Microservices
+
+# Changes from the recent exercise:
+
+- **Customer Service** turned to **User Services**. This service handles user-related data.
+
+# Security Implementations:
+
+- Token-based authentication using JSON Web Tokens (JWT)
+- Validation to Services using express-validator
+- Role-based access control (RBAC) for each services
+- API Gateway
+- Rate Limiting
