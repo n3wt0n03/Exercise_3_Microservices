@@ -7,38 +7,46 @@ const fs = require('fs');
 const https = require('https');
 const jwt = require('jsonwebtoken');
 
-
 app.use(express.json());
 
-const { validateOrderInput, checkValidationResults } = require('../middleware/inputValidation');
-const verifyToken = require("../middleware/authMiddleware");
-const apiRateLimiter = require("../middleware/rateLimiterMiddleware");
-const checkRole = require("../middleware/rbacMiddleware");
+const {
+  validateOrderInput,
+  checkValidationResults,
+} = require('../middleware/inputValidation');
+const verifyToken = require('../middleware/authMiddleware');
+const apiRateLimiter = require('../middleware/rateLimiterMiddleware');
+const checkRole = require('../middleware/rbacMiddleware');
 
-const httpsAgent = new https.Agent({  
-  rejectUnauthorized: false
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
 });
 
 let orders = [];
 let idCount = 0;
 
-const sslServer = https.createServer({
-  key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
-}, app)
+const sslServer = https.createServer(
+  {
+    key: fs.readFileSync(path.join(__dirname, '..', 'certificate', 'key.pem')),
+    cert: fs.readFileSync(
+      path.join(__dirname, '..', 'certificate', 'cert.pem')
+    ),
+  },
+  app
+);
 
-
-app.get('/getAll', 
+app.get(
+  '/getAll',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
-   async (req, res) => {
-  try {
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'server error' });
+  async (req, res) => {
+    try {
+      res.status(200).json(orders);
+    } catch (error) {
+      res.status(500).json({ message: 'server error' });
+    }
   }
-});
+);
 
 app.get(
   '/getOrder/:orderId',
@@ -59,18 +67,18 @@ app.get(
         `http://localhost:3002/user/userUser/${orderData.user}`,
         {
           headers: {
-              Authorization: req.headers['authorization'],
+            Authorization: req.headers['authorization'],
           },
-          httpsAgent
+          httpsAgent,
         }
       );
       const product = await axios.get(
         `http://localhost:3001/products/getProduct/${orderData.productId}`,
         {
           headers: {
-              Authorization: req.headers['authorization'],
+            Authorization: req.headers['authorization'],
           },
-          httpsAgent
+          httpsAgent,
         }
       );
 
@@ -96,7 +104,6 @@ app.post(
   async (req, res) => {
     const ids = req.body;
 
-
     const token = req.headers['authorization'].split(' ')[1];
     const decoded = jwt.decode(token);
     const userId = decoded.id;
@@ -115,14 +122,15 @@ app.post(
     try {
       console.log(userId);
       const product = await axios.get(
-        `https://localhost:3001/getProduct/${ids.productId}`,{
+        `https://localhost:3001/getProduct/${ids.productId}`,
+        {
           headers: {
-              Authorization: req.headers['authorization'],
+            Authorization: req.headers['authorization'],
           },
-          httpsAgent
-        })
+          httpsAgent,
+        }
+      );
 
-     
       console.log(product);
       console.log(userId);
       if (product.status !== 200) {
@@ -173,22 +181,25 @@ app.put(
 
     try {
       const user = await axios.get(
-        `http://localhost:3002/users/getUser/${userId}`, {
+        `http://localhost:3002/users/getUser/${userId}`,
+        {
           headers: {
-              Authorization: req.headers['authorization'],
+            Authorization: req.headers['authorization'],
           },
-          httpsAgent
-        });
+          httpsAgent,
+        }
+      );
       if (user.status !== 200) {
         return res.status(404).json({ message: 'User not found or invalid' });
       }
 
       const product = await axios.get(
-        `http://localhost:3001/products/getProduct/${productId}`,{
+        `http://localhost:3001/products/getProduct/${productId}`,
+        {
           headers: {
-              Authorization: req.headers['authorization'],
+            Authorization: req.headers['authorization'],
           },
-          httpsAgent
+          httpsAgent,
         }
       );
       if (product.status !== 200) {
@@ -225,5 +236,7 @@ app.delete(
   }
 );
 
-sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+sslServer.listen(port, () =>
+  console.log(`Secure server running on port ${port}`)
+);
 module.exports = app;

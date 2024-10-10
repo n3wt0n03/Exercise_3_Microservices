@@ -5,12 +5,13 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 
-
 app.use(express.json());
 
-
-
-const { validateProductInput, validateUpdateProduct, checkValidationResults } = require('../middleware/inputValidation');
+const {
+  validateProductInput,
+  validateUpdateProduct,
+  checkValidationResults,
+} = require('../middleware/inputValidation');
 const verifyToken = require('../middleware/authMiddleware');
 const apiRateLimiter = require('../middleware/rateLimiterMiddleware');
 const checkRole = require('../middleware/rbacMiddleware');
@@ -18,25 +19,29 @@ const checkRole = require('../middleware/rbacMiddleware');
 let products = [];
 let idCounter = 0;
 
-const sslServer = https.createServer({
-  key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
-}, app)
+const sslServer = https.createServer(
+  {
+    key: fs.readFileSync(path.join(__dirname, '..', 'certificate', 'key.pem')),
+    cert: fs.readFileSync(
+      path.join(__dirname, '..', 'certificate', 'cert.pem')
+    ),
+  },
+  app
+);
 
-
-
-
-app.get('/getAll', 
+app.get(
+  '/getAll',
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
   (req, res) => {
-  try {
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: 'server error' });
+    try {
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ message: 'server error' });
+    }
   }
-});
+);
 
 app.get(
   '/getProduct/:productId',
@@ -197,5 +202,7 @@ app.delete(
   }
 );
 
-sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+sslServer.listen(port, () =>
+  console.log(`Secure server running on port ${port}`)
+);
 module.exports = app;

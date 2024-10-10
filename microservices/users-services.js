@@ -7,8 +7,12 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 
-
-const { validateLogin, validateRegister, validateUpdateProfile, checkValidationResults } = require('../middleware/inputValidation');
+const {
+  validateLogin,
+  validateRegister,
+  validateUpdateProfile,
+  checkValidationResults,
+} = require('../middleware/inputValidation');
 
 app.use(express.json());
 
@@ -19,11 +23,15 @@ const checkRole = require('../middleware/rbacMiddleware');
 let users = [];
 let idCounter = 0;
 
-
-const sslServer = https.createServer({
-  key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
-}, app)
+const sslServer = https.createServer(
+  {
+    key: fs.readFileSync(path.join(__dirname, '..', 'certificate', 'key.pem')),
+    cert: fs.readFileSync(
+      path.join(__dirname, '..', 'certificate', 'cert.pem')
+    ),
+  },
+  app
+);
 
 const secretKey = 'yourSecretKey';
 
@@ -34,69 +42,82 @@ function generateToken(user) {
   return token;
 }
 
-app.post('/register', apiRateLimiter, validateRegister, checkValidationResults, async (req, res) => {
-  const userData = req.body;
+app.post(
+  '/register',
+  apiRateLimiter,
+  validateRegister,
+  checkValidationResults,
+  async (req, res) => {
+    const userData = req.body;
 
-  try {
-    const userExists = users.find((u) => u.username === userData.username);
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+    try {
+      const userExists = users.find((u) => u.username === userData.username);
+      if (userExists) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+      const newUser = {
+        id: users.length + 1,
+        username: userData.username,
+        password: hashedPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        age: userData.age,
+        gender: userData.gender,
+        role: userData.role ?? 'customer',
+      };
+
+      users.push(newUser);
+
+      res.status(201).json({
+        message: 'User registered successfully',
+        user: {
+          id: newUser.id,
+          username: newUser.username,
+          role: newUser.role,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'There was an error adding a new user' });
     }
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-
-    const newUser = {
-      id: users.length+1,
-      username: userData.username,
-      password: hashedPassword,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      age: userData.age,
-      gender: userData.gender,
-      role: userData.role ?? 'customer'
-    };
-   
-    users.push(newUser);
-
-    res.status(201).json({
-      message: 'User registered successfully',
-      user: { id: newUser.id, username: newUser.username, role: newUser.role },
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'There was an error adding a new user' });
   }
-});
+);
 
-app.post('/login', apiRateLimiter, validateLogin, checkValidationResults, async (req, res) => {
-  const logincred = req.body;
+app.post(
+  '/login',
+  apiRateLimiter,
+  validateLogin,
+  checkValidationResults,
+  async (req, res) => {
+    const logincred = req.body;
 
-  try {
-    const finduser = users.find((u) => u.username === logincred.username);
-    if (!finduser) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    try {
+      const finduser = users.find((u) => u.username === logincred.username);
+      if (!finduser) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        logincred.password,
+        finduser.password
+      );
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
+
+      const token = generateToken(finduser);
+
+      res.status(200).json({
+        message: 'Login successful',
+        token,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'There was an error logging in' });
     }
-
-    const isPasswordValid = await bcrypt.compare(logincred.password, finduser.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-
-    const token = generateToken(finduser);
-
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-    });
-    
-
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'There was an error logging in' });
   }
-});
-
-
-
+);
 
 app.get(
   '/getAll',
@@ -257,5 +278,7 @@ app.delete(
   }
 );
 
-sslServer.listen(port, () => console.log(`Secure server running on port ${port}`))
+sslServer.listen(port, () =>
+  console.log(`Secure server running on port ${port}`)
+);
 module.exports = app;
