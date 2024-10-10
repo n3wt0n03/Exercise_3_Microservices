@@ -12,6 +12,20 @@ Members:
 - Added middlewares for all the services and are contained into one folder named **middlewares**.
 - Added **app.js** file that handles all the requests for all the services.
 
+# Technologies Used:
+
+- Node.js
+- Postman
+
+# Node Libraries Used:
+
+- Express.js
+- Axios
+- bcrypt
+- express-validator
+- express-rate-limit
+- jsonwebtoken
+
 # Security Implementations:
 
 - Token-based authentication using **JSON Web Tokens (JWT)**
