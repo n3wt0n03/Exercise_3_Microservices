@@ -8,8 +8,7 @@ const fs = require('fs');
 const https = require('https');
 
 
-const { validateLogin, validateRegister, validateUpdateProfile, checkValidationResults } = require('../middlewares/inputValidation');
-const { fstat } = require("fs");
+const { validateLogin, validateRegister, validateUpdateProfile, checkValidationResults } = require('../middleware/inputValidation');
 
 app.use(express.json());
 
@@ -20,14 +19,11 @@ const checkRole = require('../middleware/rbacMiddleware');
 let users = [];
 let idCounter = 0;
 
+
 const sslServer = https.createServer({
   key: fs.readFileSync(path.join(__dirname,'..', 'certificate', 'key.pem')),
   cert: fs.readFileSync(path.join(__dirname ,'..', 'certificate', 'cert.pem'))
 }, app)
-
-
-
-
 
 const secretKey = 'yourSecretKey';
 
@@ -35,7 +31,6 @@ function generateToken(user) {
   const token = jwt.sign({ id: user.id, role: user.role }, secretKey, {
     expiresIn: '1h',
   });
-
   return token;
 }
 
@@ -50,15 +45,16 @@ app.post('/register', apiRateLimiter, validateRegister, checkValidationResults, 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     const newUser = {
-      id: users.length++,
+      id: users.length+1,
       username: userData.username,
       password: hashedPassword,
       firstName: userData.firstName,
       lastName: userData.lastName,
       age: userData.age,
       gender: userData.gender,
-      role: userData.role ?? 'user'
+      role: userData.role ?? 'customer'
     };
+   
     users.push(newUser);
 
     res.status(201).json({
@@ -70,28 +66,34 @@ app.post('/register', apiRateLimiter, validateRegister, checkValidationResults, 
   }
 });
 
-app.post('/login', apiRateLimiter, validateLogin, async (req, res) => {
-  const { username, password } = req.body;
+app.post('/login', apiRateLimiter, validateLogin, checkValidationResults, async (req, res) => {
+  const logincred = req.body;
 
   try {
-  
-    const user = users.find((u) => u.username === username);
-    if (!user) {
+    const finduser = users.find((u) => u.username === logincred.username);
+    if (!finduser) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
+    const isPasswordValid = await bcrypt.compare(logincred.password, finduser.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    const token = generateToken(user);
-    res.json({ message: 'Login successful', token });
+    const token = generateToken(finduser); 
+   
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'There was an error logging in' });
   }
 });
+
+
+
 
 app.get(
   '/users/getAll',
@@ -171,7 +173,9 @@ app.put(
   verifyToken,
   apiRateLimiter,
   checkRole(['admin', 'customer']),
-  validateUpdateProfile,(req, res) => {
+  validateUpdateProfile,
+  checkValidationResults,
+  (req, res) => {
     const userId = parseInt(req.params.userId);
     const userIndex = users.findIndex((user) => user.id === userId);
 

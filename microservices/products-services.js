@@ -8,6 +8,9 @@ const https = require('https');
 
 app.use(express.json());
 
+
+
+const { validateProductInput, validateUpdateProduct, checkValidationResults } = require('../middleware/inputValidation');
 const verifyToken = require('../middleware/authMiddleware');
 const apiRateLimiter = require('../middleware/rateLimiterMiddleware');
 const checkRole = require('../middleware/rbacMiddleware');
@@ -26,7 +29,7 @@ const sslServer = https.createServer({
 app.get('/products/getAll', 
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
   (req, res) => {
   try {
     res.status(200).json(products);
@@ -39,7 +42,7 @@ app.get(
   '/products/getProduct/:productId',
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
   (req, res) => {
     const productId = parseInt(req.params.productId);
     const productData = products.find((product) => product.id === productId);
@@ -60,7 +63,9 @@ app.post(
   '/products/addProduct',
   verifyToken,
   apiRateLimiter,
-  checkRole['admin'],
+  checkRole(['admin']),
+  validateProductInput,
+  checkValidationResults,
   (req, res) => {
     const item = req.body;
 
@@ -103,7 +108,9 @@ app.put(
   '/products/updateProduct/:productId',
   verifyToken,
   apiRateLimiter,
-  checkRole['admin'],
+  validateUpdateProduct,
+  checkValidationResults,
+  checkRole(['admin']),
   (req, res) => {
     const productId = parseInt(req.params.productId);
     const productIndex = products.findIndex(
@@ -168,7 +175,7 @@ app.delete(
   '/products/deleteProduct/:productId',
   verifyToken,
   apiRateLimiter,
-  checkRole['admin'],
+  checkRole(['admin']),
   (req, res) => {
     const productId = parseInt(req.params.productId);
     const productIndex = products.findIndex(

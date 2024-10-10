@@ -9,9 +9,11 @@ const https = require('https');
 
 app.use(express.json());
 
-const verifyToken = require('../middleware/authMiddleware');
-const apiRateLimiter = require('../middleware/rateLimiterMiddleware');
-const checkRole = require('../middleware/rbacMiddleware');
+const { validateOrderInput, checkValidationResults } = require('../middleware/inputValidation');
+const verifyToken = require("../middleware/authMiddleware");
+const apiRateLimiter = require("../middleware/rateLimiterMiddleware");
+const checkRole = require("../middleware/rbacMiddleware");
+
 
 let orders = [];
 let idCount = 0;
@@ -22,9 +24,11 @@ const sslServer = https.createServer({
 }, app)
 
 
-
-
-app.get('/orders/getAll', async (req, res) => {
+app.get('/orders/getAll', 
+  verifyToken,
+  apiRateLimiter,
+  checkRole(['admin', 'customer']),
+   async (req, res) => {
   try {
     res.status(200).json(orders);
   } catch (error) {
@@ -36,7 +40,7 @@ app.get(
   '/orders/getOrder/:orderId',
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
   async (req, res) => {
     const orderId = parseInt(req.params.orderId);
     const orderData = orders.find((order) => order.id === orderId);
@@ -70,7 +74,9 @@ app.post(
   '/orders/makeOrder',
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
+  validateOrderInput,
+  checkValidationResults,
   async (req, res) => {
     const ids = req.body;
 
@@ -122,7 +128,7 @@ app.put(
   '/orders/updateOrder/:orderId',
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
   async (req, res) => {
     const orderId = parseInt(req.params.orderId);
     const orderIndex = orders.findIndex((order) => order.id === orderId);
@@ -174,7 +180,7 @@ app.delete(
   '/orders/deleteOrder/:orderId',
   verifyToken,
   apiRateLimiter,
-  checkRole[('admin', 'customer')],
+  checkRole(['admin', 'customer']),
   (req, res) => {
     const orderId = parseInt(req.params.orderId);
     const orderIndex = orders.findIndex((order) => order.id === orderId);
